@@ -7,14 +7,14 @@ def toFixed(numObj, digits=0): # функция для получения фис
 
 startMassOnStage = [ # масса ракеты в начале каждой ступени
     Mf,
-    Mf - (massOfSideEngine + massOfSideTankFull) * 4,
-    Mf - (massOfSideEngine + massOfSideTankFull) * 4 - (massOfCentralEngine + massOfCentralBottomTankFull + massOfCentralTopTankFull),
-    Mf - (massOfSideEngine + massOfSideTankFull) * 4 - (massOfCentralEngine + massOfCentralBottomTankFull + massOfCentralTopTankFull) - (massOfManeurEngine + massOfManeurTankFull)
+    Mf - (massOfSideEngine + massOfSideTankFull) * 5,
+    Mf - (massOfSideEngine + massOfSideTankFull) * 5 - (massOfCentralEngine + massOfCentralBottomTankFull) * 5,
+    Mf - (massOfSideEngine + massOfSideTankFull) * 5 - (massOfCentralEngine + massOfCentralBottomTankFull) * 5 - (massOfManeurEngine + massOfManeurTankFull)
 ]
 
 endMassOnStage = [
-    startMassOnStage[0] - (massOfSideTankFull - massOfSideTankEmpty) * 4,
-    startMassOnStage[1] - (massOfCentralTopTankFull - massOfCentralTopTankEmpty) - (massOfCentralBottomTankFull - massOfCentralBottomTankEmpty),
+    startMassOnStage[0] - (massOfSideTankFull - massOfSideTankEmpty) * 5,
+    startMassOnStage[1] - (massOfCentralBottomTankFull - massOfCentralBottomTankEmpty) * 5,
     startMassOnStage[2] - (massOfManeurTankFull - massOfManeurTankEmpty),
     startMassOnStage[3]
 ]
@@ -24,14 +24,14 @@ def fuel_consumption_coefficient(massWithFuel, massWithoutFuel, timeOfWork): # �
 
 fuelConsumptionCoefficient = [
     fuel_consumption_coefficient(massOfSideTankFull, massOfSideTankEmpty, stageEngineDuration[0]),
-    fuel_consumption_coefficient(massOfCentralTopTankFull + massOfCentralBottomTankFull, massOfCentralTopTankEmpty + massOfCentralBottomTankEmpty, stageEngineDuration[1]),
+    fuel_consumption_coefficient(massOfCentralBottomTankFull, massOfCentralBottomTankEmpty, stageEngineDuration[1]),
     fuel_consumption_coefficient(massOfManeurTankFull, massOfManeurTankEmpty, stageEngineDuration[2]),
     0
 ]
 
 fuelConsumptionCoefficientOnStage = [
-    fuelConsumptionCoefficient[0] * 4 + fuelConsumptionCoefficient[1],
-    fuelConsumptionCoefficient[1],
+    fuelConsumptionCoefficient[0] * 5 + fuelConsumptionCoefficient[1] * 5,
+    fuelConsumptionCoefficient[1] * 5,
     fuelConsumptionCoefficient[2],
     0
 ]
@@ -92,7 +92,7 @@ def force_of_thrust(Isp, FuelConsumptionCoefficient): # сила тяги дви
     return Isp * FuelConsumptionCoefficient * g
 
 def acceleration(ForceOfThrust, ForceOfGravity, ForceOfAirResistance, Angle, mass): # ускорение, м/с^2
-    return ((ForceOfThrust * cos(radians(Angle)) + ForceOfGravity[0] + ForceOfAirResistance[0]) / mass, (ForceOfThrust * sin(radians(Angle)) + ForceOfGravity[1] + ForceOfAirResistance[1]) / mass)
+    return ((abs(ForceOfThrust * cos(radians(Angle)) + ForceOfGravity[0] + ForceOfAirResistance[0])) / mass, abs((ForceOfThrust * sin(radians(Angle)) + ForceOfGravity[1] + ForceOfAirResistance[1]) / mass))
 
 def array_to_csv(row):
     return '\t'.join(row) + '\n'
@@ -205,7 +205,7 @@ for t in range(period):
         )
     )
 
-    velocityArray.append((velocityArray[t][0] + accelerationArray[t][0], velocityArray[t][0] + accelerationArray[t][0]))
+    velocityArray.append((velocityArray[t][0] + accelerationArray[t][0], velocityArray[t][0] + accelerationArray[t][1]))
 
     positionArray.append((positionArray[t][0] + velocityArray[t][0], positionArray[t][1] + velocityArray[t][1]))
 
@@ -228,4 +228,5 @@ if __name__ == '__main__':
     textFile.write(str(table))
     textFile.close()
     csvFile.close()
-    print(table)
+    print(velocityArray[132:136])
+    print(accelerationArray[132:136])
